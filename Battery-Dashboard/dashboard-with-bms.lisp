@@ -12,6 +12,13 @@
 (def this-I (get-current-in))
 (sleep (/ 1 update-rate-hz))
 
+;create list of p-group indices
+(def num-cells (get-bms-val 'bms-cell-num))
+(def cell-indices (range 0 num-cells))
+
+; define function to get p-group voltage for row x
+(def get-bms-voltage (lambda (x) (get-bms-val 'bms-v-cell x)))
+
 ; continuously compute and send to vesc tool
 (loopwhile t
     (progn
@@ -28,12 +35,9 @@
             (def this-ir ir))
         ; update filtered resistance value
         (def ir (+ (* filter-weight ir) (* (- 1 filter-weight) this-ir)))
-
         ; get high and low row voltages from BMS
-        ; define function to get p-group voltage for row x
-        (def get-bms-voltage (lambda (x) (get-bms-val 'bms-v-cell x)))
         ; map bms cell voltage function over cells
-        (def voltage-list (map get-bms-voltage (range 0 14)))
+        (def voltage-list (map get-bms-voltage cell-indices))
         ; initialize max and min voltages
         (def max-voltage 0)
         (def min-voltage 100000)
